@@ -1,16 +1,427 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Food Ordering System - Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpressMeal - Order Food Online</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 100px; background-color: #f4f4f4; }
-        h1 { color: #ff5722; }
-        p { color: #555; }
+        :root{
+            --orange:#FF6B35;
+            --orange-dark:#e85a2a;
+            --dark:#1c1c1e;
+            --gray:#6c757d;
+            --bg:#fafafa;
+        }
+        *{font-family:'Poppins',sans-serif;}
+        body{background:var(--bg); color:var(--dark);}
+        h1,h2,h3,h4,h5{font-weight:700;}
+
+        /* Navbar */
+        .navbar{position:fixed; top:0; width:100%; z-index:999; padding:18px 0; transition:.35s;}
+        .navbar.scrolled{background:#fff!important; box-shadow:0 4px 20px rgba(0,0,0,.08); padding:10px 0;}
+        .navbar .nav-link{color:#fff; font-weight:500; margin:0 8px;}
+        .navbar.scrolled .nav-link{color:var(--dark);}
+        .navbar-brand{font-weight:800; font-size:1.5rem; color:#fff!important;}
+        .navbar.scrolled .navbar-brand{color:var(--dark)!important;}
+        .brand-dot{color:var(--orange);}
+        .btn-orange{background:var(--orange); border:none; color:#fff; font-weight:600; border-radius:50px; padding:10px 26px; transition:.25s;}
+        .btn-orange:hover{background:var(--orange-dark); color:#fff; transform:translateY(-2px);}
+        .btn-outline-glass{border:1.5px solid rgba(255,255,255,.7); color:#fff; border-radius:50px; padding:9px 24px; font-weight:500;}
+        .navbar.scrolled .btn-outline-glass{border-color:var(--dark); color:var(--dark);}
+
+        /* Hero */
+        .hero{
+            min-height:100vh; display:flex; align-items:center; position:relative; overflow:hidden;
+            background:linear-gradient(135deg, rgba(20,20,22,.88), rgba(255,107,53,.55)),
+            url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+        }
+        .hero h1{color:#fff; font-size:3.4rem; line-height:1.15;}
+        .hero p.lead{color:#f1f1f1; font-size:1.2rem;}
+        .search-box{background:rgba(255,255,255,.95); border-radius:60px; padding:8px 8px 8px 24px; max-width:560px; backdrop-filter:blur(6px);}
+        .search-box input{border:none; outline:none; background:transparent; flex:1; font-size:1rem;}
+        .float-card{position:absolute; background:#fff; border-radius:16px; padding:14px 18px; box-shadow:0 10px 30px rgba(0,0,0,.18); font-weight:600; font-size:.9rem;}
+        .float-card i{color:var(--orange); margin-right:6px;}
+        .fc1{top:18%; right:8%; animation:float 4s ease-in-out infinite;}
+        .fc2{bottom:16%; right:16%; animation:float 5s ease-in-out infinite .5s;}
+        @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+
+        /* Section titles */
+        .section-tag{color:var(--orange); font-weight:700; letter-spacing:1px; text-transform:uppercase; font-size:.85rem;}
+        .section-title{font-size:2.1rem; margin-bottom:8px;}
+
+        /* Categories */
+        .cat-card{background:#fff; border-radius:18px; padding:28px 14px; text-align:center; box-shadow:0 4px 18px rgba(0,0,0,.05); transition:.3s; cursor:pointer;}
+        .cat-card:hover{transform:translateY(-8px); box-shadow:0 16px 30px rgba(255,107,53,.18);}
+        .cat-icon{width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:1.7rem; color:#fff;}
+
+        /* Restaurant cards */
+        .resto-card{background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,.06); transition:.3s;}
+        .resto-card:hover{transform:translateY(-6px); box-shadow:0 16px 34px rgba(0,0,0,.12);}
+        .resto-img{height:170px; object-fit:cover; width:100%;}
+        .badge-discount{position:absolute; top:14px; left:14px; background:var(--orange); color:#fff; border-radius:30px; padding:5px 14px; font-size:.75rem; font-weight:700;}
+        .badge-rating{background:#fff; color:var(--dark); border-radius:30px; padding:3px 10px; font-size:.8rem; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,.12);}
+
+        /* Why choose us */
+        .feature-card{text-align:center; padding:34px 18px;}
+        .feature-icon{width:76px; height:76px; border-radius:22px; background:linear-gradient(135deg,var(--orange),#ff9166); display:flex; align-items:center; justify-content:center; font-size:1.9rem; color:#fff; margin:0 auto 16px; transition:.3s;}
+        .feature-card:hover .feature-icon{transform:rotate(-8deg) scale(1.08);}
+
+        /* Stats */
+        .stats-section{background:var(--dark); color:#fff;}
+        .stat-num{font-size:2.6rem; font-weight:800; color:var(--orange);}
+
+        /* Partner */
+        .partner-card{border-radius:20px; padding:40px; color:#fff; position:relative; overflow:hidden;}
+        .partner-card.restaurant{background:linear-gradient(135deg,#2b2b2e,#1c1c1e);}
+        .partner-card.rider{background:linear-gradient(135deg,var(--orange),#ff9166);}
+
+        /* Portal section */
+        .portal-card{background:#fff; border-radius:20px; padding:34px 24px; text-align:center; box-shadow:0 6px 22px rgba(0,0,0,.06); transition:.3s; height:100%;}
+        .portal-card:hover{transform:translateY(-8px); box-shadow:0 18px 34px rgba(0,0,0,.1);}
+        .portal-icon{width:78px; height:78px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 18px; color:#fff;}
+        .grad-orange{background:linear-gradient(135deg,var(--orange),#ff9166);}
+        .grad-dark{background:linear-gradient(135deg,#3a3a3d,#1c1c1e);}
+        .grad-blue{background:linear-gradient(135deg,#3b82f6,#60a5fa);}
+        .grad-purple{background:linear-gradient(135deg,#8b5cf6,#a78bfa);}
+        .btn-portal{border-radius:50px; padding:10px 28px; font-weight:600; color:#fff; border:none; width:100%;}
+
+        /* Footer */
+        footer{background:var(--dark); color:#c9c9c9; padding-top:60px;}
+        footer h6{color:#fff; font-weight:700; margin-bottom:16px;}
+        footer a{color:#c9c9c9; text-decoration:none; display:block; margin-bottom:8px; font-size:.92rem;}
+        footer a:hover{color:var(--orange);}
+        .social-icon{width:38px; height:38px; border-radius:50%; background:#2b2b2e; display:inline-flex; align-items:center; justify-content:center; margin-right:8px; color:#fff; transition:.25s;}
+        .social-icon:hover{background:var(--orange);}
     </style>
 </head>
 <body>
-<h1>Welcome to Web-Based Food Ordering System! 🍔</h1>
-<p>Our Spring Boot project is up and running successfully!</p>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar navbar-expand-lg" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">Express<span class="brand-dot">Meal</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" style="border:none;">
+            <i class="bi bi-list text-white fs-2"></i>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="navMenu">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" th:href="@{/}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/restaurant/menu}">Restaurants</a></li>
+                <li class="nav-item"><a class="nav-link" href="#categories">Categories</a></li>
+                <li class="nav-item"><a class="nav-link" href="#why">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="#footer">Contact</a></li>
+            </ul>
+        </div>
+        <div class="d-none d-lg-flex">
+            <a th:href="@{/customer/login}" class="btn btn-outline-glass me-2">Login</a>
+            <a th:href="@{/customer/register}" class="btn btn-orange">Register</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-lg-7" data-aos="fade-right">
+                <h1>Hungry? <br>We've Got You Covered.</h1>
+                <p class="lead my-3">Order delicious meals from your favourite restaurants with lightning-fast delivery.</p>
+
+                <div class="search-box d-flex align-items-center my-4">
+                    <i class="bi bi-search text-secondary me-2"></i>
+                    <input type="text" placeholder="Search restaurants or foods...">
+                    <button class="btn btn-orange">Search</button>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <a th:href="@{/restaurant/menu}" class="btn btn-light fw-semibold px-4 py-2 rounded-pill">Browse Restaurants</a>
+                    <a th:href="@{/restaurant/menu}" class="btn btn-orange px-4 py-2">Order Now <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="float-card fc1 d-none d-lg-block" data-aos="zoom-in" data-aos-delay="300">
+            <i class="bi bi-star-fill"></i> 4.9 Rating &nbsp;|&nbsp; 2,300+ reviews
+        </div>
+        <div class="float-card fc2 d-none d-lg-block" data-aos="zoom-in" data-aos-delay="600">
+            <i class="bi bi-lightning-charge-fill"></i> Delivered in 25 mins
+        </div>
+    </div>
+</section>
+
+<!-- ===== CATEGORIES ===== -->
+<section class="py-5 py-md-5" id="categories" style="padding-top:80px!important;">
+    <div class="container py-4">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <p class="section-tag">Categories</p>
+            <h2 class="section-title">Popular Categories</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-6 col-md-2" data-aos="fade-up">
+                <a th:href="@{/restaurant/menu(category='Pizza')}" class="text-decoration-none text-dark"><div class="cat-card"><div class="cat-icon" style="background:#ff6b35;"><i class="bi bi-pie-chart-fill"></i></div><p class="mb-0 fw-semibold">Pizza</p></div></a>
+            </div>
+            <div class="col-6 col-md-2" data-aos="fade-up" data-aos-delay="100">
+                <a th:href="@{/restaurant/menu(category='Burger')}" class="text-decoration-none text-dark"><div class="cat-card"><div class="cat-icon" style="background:#f59e0b;"><i class="bi bi-egg-fried"></i></div><p class="mb-0 fw-semibold">Burger</p></div></a>
+            </div>
+            <div class="col-6 col-md-2" data-aos="fade-up" data-aos-delay="200">
+                <a th:href="@{/restaurant/menu(category='Sri Lankan')}" class="text-decoration-none text-dark"><div class="cat-card"><div class="cat-icon" style="background:#10b981;"><i class="bi bi-cup-hot-fill"></i></div><p class="mb-0 fw-semibold">Sri Lankan</p></div></a>
+            </div>
+            <div class="col-6 col-md-2" data-aos="fade-up" data-aos-delay="300">
+                <a th:href="@{/restaurant/menu(category='Chinese')}" class="text-decoration-none text-dark"><div class="cat-card"><div class="cat-icon" style="background:#ef4444;"><i class="bi bi-basket2-fill"></i></div><p class="mb-0 fw-semibold">Chinese</p></div></a>
+            </div>
+            <div class="col-6 col-md-2" data-aos="fade-up" data-aos-delay="400">
+                <a th:href="@{/restaurant/menu(category='Desserts')}" class="text-decoration-none text-dark"><div class="cat-card"><div class="cat-icon" style="background:#8b5cf6;"><i class="bi bi-cake2-fill"></i></div><p class="mb-0 fw-semibold">Desserts</p></div></a>
+            </div>
+            <div class="col-6 col-md-2" data-aos="fade-up" data-aos-delay="500">
+                <a th:href="@{/restaurant/menu(category='Beverages')}" class="text-decoration-none text-dark"><div class="cat-card"><div class="cat-icon" style="background:#3b82f6;"><i class="bi bi-cup-straw"></i></div><p class="mb-0 fw-semibold">Beverages</p></div></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURED RESTAURANTS ===== -->
+<section class="py-5" style="background:#fff;">
+    <div class="container py-4">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <p class="section-tag">Handpicked for you</p>
+            <h2 class="section-title">Featured Restaurants</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="resto-card">
+                    <div class="position-relative">
+                        <img class="resto-img" src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=500&q=80">
+                        <span class="badge-discount">20% OFF</span>
+                    </div>
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-1">Spice Garden</h6>
+                            <span class="badge-rating"><i class="bi bi-star-fill text-warning"></i> 4.8</span>
+                        </div>
+                        <p class="text-muted small mb-2"><i class="bi bi-clock"></i> 25-35 min &nbsp; · &nbsp; Min Rs. 500</p>
+                        <a th:href="@{/restaurant/menu}" class="btn btn-orange w-100">Order Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="150">
+                <div class="resto-card">
+                    <div class="position-relative">
+                        <img class="resto-img" src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=500&q=80">
+                        <span class="badge-discount">Free Delivery</span>
+                    </div>
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-1">Burger Hub</h6>
+                            <span class="badge-rating"><i class="bi bi-star-fill text-warning"></i> 4.6</span>
+                        </div>
+                        <p class="text-muted small mb-2"><i class="bi bi-clock"></i> 20-30 min &nbsp; · &nbsp; Min Rs. 400</p>
+                        <a th:href="@{/restaurant/menu}" class="btn btn-orange w-100">Order Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="resto-card">
+                    <div class="position-relative">
+                        <img class="resto-img" src="https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=500&q=80">
+                        <span class="badge-discount">15% OFF</span>
+                    </div>
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-1">Noodle House</h6>
+                            <span class="badge-rating"><i class="bi bi-star-fill text-warning"></i> 4.7</span>
+                        </div>
+                        <p class="text-muted small mb-2"><i class="bi bi-clock"></i> 30-40 min &nbsp; · &nbsp; Min Rs. 600</p>
+                        <a th:href="@{/restaurant/menu}" class="btn btn-orange w-100">Order Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== WHY CHOOSE US ===== -->
+<section class="py-5" id="why" style="background:var(--bg);">
+    <div class="container py-4">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <p class="section-tag">Our Advantage</p>
+            <h2 class="section-title">Why Choose ExpressMeal</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3" data-aos="fade-up">
+                <div class="feature-card"><div class="feature-icon"><i class="bi bi-lightning-charge-fill"></i></div><h6>Fast Delivery</h6><p class="text-muted small">Hot food delivered in under 30 minutes.</p></div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="150">
+                <div class="feature-card"><div class="feature-icon"><i class="bi bi-shield-lock-fill"></i></div><h6>Secure Payments</h6><p class="text-muted small">Encrypted, safe checkout every time.</p></div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card"><div class="feature-icon"><i class="bi bi-geo-alt-fill"></i></div><h6>Live Order Tracking</h6><p class="text-muted small">Know exactly where your order is.</p></div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="450">
+                <div class="feature-card"><div class="feature-icon"><i class="bi bi-award-fill"></i></div><h6>Top Rated Restaurants</h6><p class="text-muted small">Only the best, handpicked for you.</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== STATS ===== -->
+<section class="stats-section py-5">
+    <div class="container py-4 text-center">
+        <div class="row g-4">
+            <div class="col-6 col-md-3" data-aos="fade-up"><div class="stat-num" data-count="200">0</div><p>Restaurants</p></div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100"><div class="stat-num" data-count="20000">0</div><p>Customers</p></div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200"><div class="stat-num" data-count="500">0</div><p>Delivery Riders</p></div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300"><div class="stat-num" data-count="50000">0</div><p>Orders Delivered</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== BECOME A PARTNER ===== -->
+<section class="py-5" style="background:#fff;">
+    <div class="container py-4">
+        <div class="row g-4">
+            <div class="col-md-6" data-aos="fade-right">
+                <div class="partner-card restaurant">
+                    <i class="bi bi-shop fs-1 mb-3 d-block"></i>
+                    <h4>Partner With Us</h4>
+                    <p class="opacity-75">List your restaurant on ExpressMeal and reach thousands of hungry customers.</p>
+                    <a th:href="@{/restaurant/login}" class="btn btn-orange mt-2">Become a Restaurant Partner</a>
+                </div>
+            </div>
+            <div class="col-md-6" data-aos="fade-left">
+                <div class="partner-card rider">
+                    <i class="bi bi-bicycle fs-1 mb-3 d-block"></i>
+                    <h4>Ride With ExpressMeal</h4>
+                    <p class="opacity-90">Earn flexibly on your own schedule as a delivery rider.</p>
+                    <a th:href="@{/delivery/login}" class="btn btn-light mt-2 fw-semibold">Join as Rider</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== USER PORTAL SECTION ===== -->
+<section class="py-5" style="background:var(--bg);">
+    <div class="container py-4">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <p class="section-tag">Get Started</p>
+            <h2 class="section-title">Choose Your Portal</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3 col-6" data-aos="fade-up">
+                <div class="portal-card">
+                    <div class="portal-icon grad-orange"><i class="bi bi-person-fill"></i></div>
+                    <h6>Customer Portal</h6>
+                    <p class="text-muted small">Order food, track deliveries, manage your account.</p>
+                    <a th:href="@{/customer/login}" class="btn btn-portal grad-orange">Enter</a>
+                </div>
+            </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="portal-card">
+                    <div class="portal-icon grad-dark"><i class="bi bi-shop-window"></i></div>
+                    <h6>Restaurant Portal</h6>
+                    <p class="text-muted small">Manage your menu and incoming orders.</p>
+                    <a th:href="@{/restaurant/login}" class="btn btn-portal grad-dark">Enter</a>
+                </div>
+            </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="portal-card">
+                    <div class="portal-icon grad-blue"><i class="bi bi-bicycle"></i></div>
+                    <h6>Delivery Rider Portal</h6>
+                    <p class="text-muted small">View and manage your assigned deliveries.</p>
+                    <a th:href="@{/delivery/login}" class="btn btn-portal grad-blue">Enter</a>
+                </div>
+            </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="portal-card">
+                    <div class="portal-icon grad-purple"><i class="bi bi-shield-lock-fill"></i></div>
+                    <h6>Administrator Portal</h6>
+                    <p class="text-muted small">Oversee the entire ExpressMeal platform.</p>
+                    <a th:href="@{/admin/login}" class="btn btn-portal grad-purple">Enter</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer id="footer">
+    <div class="container">
+        <div class="row g-4 pb-4">
+            <div class="col-md-3">
+                <h5 class="text-white">Express<span style="color:var(--orange);">Meal</span></h5>
+                <p class="small">Order delicious meals from your favourite restaurants with lightning-fast delivery.</p>
+                <div class="mt-3">
+                    <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="bi bi-twitter-x"></i></a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <h6>Quick Links</h6>
+                <a th:href="@{/}">Home</a>
+                <a th:href="@{/restaurant/menu}">Restaurants</a>
+                <a href="#categories">Categories</a>
+                <a href="#why">About Us</a>
+            </div>
+            <div class="col-md-3">
+                <h6>Support</h6>
+                <a href="#">Help Center</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#footer">Contact Us</a>
+            </div>
+            <div class="col-md-3">
+                <h6>Newsletter</h6>
+                <p class="small">Get updates on new restaurants and offers.</p>
+                <div class="input-group">
+                    <input type="email" class="form-control" placeholder="Your email">
+                    <button class="btn btn-orange">Join</button>
+                </div>
+            </div>
+        </div>
+        <hr style="border-color:#2b2b2e;">
+        <p class="text-center small py-3 mb-0">&copy; 2026 ExpressMeal · SE2030 Software Engineering Group Project</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 800, once: true });
+
+    window.addEventListener('scroll', function () {
+        document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // Animated counters
+    const counters = document.querySelectorAll('.stat-num');
+    const runCounters = () => {
+        counters.forEach(el => {
+            const target = +el.getAttribute('data-count');
+            let cur = 0;
+            const step = Math.ceil(target / 80);
+            const t = setInterval(() => {
+                cur += step;
+                if (cur >= target) { cur = target; clearInterval(t); }
+                el.textContent = cur.toLocaleString() + (target >= 1000 ? '+' : '+');
+            }, 20);
+        });
+    };
+    const statsSection = document.querySelector('.stats-section');
+    let counted = false;
+    window.addEventListener('scroll', () => {
+        const rect = statsSection.getBoundingClientRect();
+        if (!counted && rect.top < window.innerHeight && rect.bottom > 0) {
+            counted = true;
+            runCounters();
+        }
+    });
+</script>
 </body>
 </html>
