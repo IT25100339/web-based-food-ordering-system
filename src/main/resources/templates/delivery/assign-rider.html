@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><title>Assign Rider</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="background:#f7f5f2;">
+<div class="container my-5" style="max-width:450px;">
+    <h3 class="mb-4">Assign Rider — Order #<span th:text="${delivery.order.orderId}"></span></h3>
+    <form th:action="@{/delivery/assign}" method="post" class="card p-4 shadow-sm">
+        <input type="hidden" name="deliveryId" th:value="${delivery.deliveryId}" />
+        <label class="form-label">Select Available Rider</label>
+        <select name="riderId" class="form-select mb-3">
+            <option th:each="r : ${availableRiders}" th:value="${r.riderId}" th:text="${r.name} + ' - ' + ${r.vehicleNumber}"></option>
+        </select>
+        <button type="submit" class="btn btn-warning">Assign</button>
+    </form>
+</div>
+</body>
+</html>
