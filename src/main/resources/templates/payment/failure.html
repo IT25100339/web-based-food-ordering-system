@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Payment Not Completed</title></head>
+<body>
+<main>
+    <h1>Payment Not Completed</h1>
+    <p th:text="${payment.message}"></p>
+    <dl>
+        <dt>Order ID</dt><dd th:text="${payment.orderId}"></dd>
+        <dt>Amount</dt><dd th:text="${payment.amount}"></dd>
+        <dt>Payment method</dt><dd th:text="${payment.paymentMethod}"></dd>
+        <dt th:if="${payment.transactionId != null}">Transaction ID</dt>
+        <dd th:if="${payment.transactionId != null}" th:text="${payment.transactionId}"></dd>
+    </dl>
+    <a th:href="@{/payments/new}">Return to payment form</a>
+</main>
+</body>
+</html>

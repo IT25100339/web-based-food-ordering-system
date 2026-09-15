@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Payment Successful</title></head>
+<body>
+<main>
+    <h1>Payment Successful</h1>
+    <p>Your payment has been recorded and a receipt was generated.</p>
+    <dl>
+        <dt>Order ID</dt><dd th:text="${payment.orderId}"></dd>
+        <dt>Amount</dt><dd th:text="${payment.amount}"></dd>
+        <dt>Payment method</dt><dd th:text="${payment.paymentMethod}"></dd>
+        <dt>Transaction ID</dt><dd th:text="${payment.transactionId}"></dd>
+        <dt>Receipt number</dt><dd th:text="${payment.receiptNumber}"></dd>
+    </dl>
+    <a th:href="@{/payments/new}">Make another payment</a>
+</main>
+</body>
+</html>
