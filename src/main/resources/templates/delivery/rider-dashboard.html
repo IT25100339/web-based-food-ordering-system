@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><title>Rider Dashboard - ExpressMeal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        *{font-family:'Poppins',sans-serif;}
+        body{background:#f4f8fd;}
+        .navbar{background:#1c2b3d;}
+        .brand span{color:#3b82f6;}
+        .hero-strip{background:linear-gradient(135deg,#3b82f6,#60a5fa); border-radius:18px; color:#fff; padding:28px;}
+        .card{border:none; border-radius:16px;}
+        .badge-status{border-radius:30px; padding:5px 12px; font-weight:600; font-size:.75rem;}
+        .btn-blue{background:#3b82f6; border:none; color:#fff; border-radius:50px; font-weight:600;}
+        .btn-blue:hover{background:#2563eb; color:#fff;}
+        .steps{list-style:none; padding:0; margin:0 0 14px;}
+        .steps li{padding:6px 0 6px 26px; position:relative; font-size:.83rem; color:#aaa;}
+        .steps li.done{color:#198754; font-weight:600;}
+        .steps li::before{content:"●"; position:absolute; left:0;}
+        .cust-box{background:#f8f9fb; border-radius:10px; padding:10px 12px; font-size:.85rem;}
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark px-4 py-3">
+    <span class="navbar-brand brand fw-bold"><i class="bi bi-bicycle me-1"></i>Express<span>Meal</span> Rider</span>
+    <div>
+        <span class="text-white-50 small me-3" th:text="${rider.name}"></span>
+        <a th:href="@{/logout}" class="btn btn-blue btn-sm">Logout</a>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <div class="hero-strip mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h3 class="mb-1">Hey, <span th:text="${rider.name}"></span> 🛵</h3>
+            <p class="mb-0 opacity-75">Vehicle: <span th:text="${rider.vehicleNumber}"></span></p>
+        </div>
+        <span class="badge-status bg-white text-primary fs-6" th:text="${rider.status}"></span>
+    </div>
+
+    <h5 class="mb-3">Available orders <span class="badge bg-warning text-dark" th:text="${pendingDeliveries.size()} + ' pending'"></span></h5>
+    <div class="row g-3 mb-4">
+        <div class="col-md-6" th:each="p : ${pendingDeliveries}">
+            <div class="card p-3 shadow-sm border-warning-subtle">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong>Order #<span th:text="${p.order.orderId}"></span></strong>
+                    <span class="badge-status bg-warning-subtle text-warning-emphasis">PENDING</span>
+                </div>
+                <p class="mb-1 small"><i class="bi bi-geo-alt-fill text-primary"></i> <span th:text="${p.order.deliveryAddress}"></span></p>
+                <p class="mb-3 small text-muted">Total: Rs. <span th:text="${p.order.totalAmount}"></span></p>
+                <form th:action="@{/delivery/accept/{id}(id=${p.deliveryId})}" method="post">
+                    <button type="submit" class="btn btn-blue btn-sm w-100">Accept this delivery</button>
+                </form>
+            </div>
+        </div>
+        <p th:if="${pendingDeliveries.isEmpty()}" class="text-muted small">No pending orders right now.</p>
+    </div>
+
+    <h5 class="mb-3">My deliveries</h5>
+    <div class="row g-3">
+        <div class="col-md-6" th:each="d : ${deliveries}">
+            <div class="card p-3 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong>Order #<span th:text="${d.order.orderId}"></span></strong>
+                    <span class="badge-status bg-primary-subtle text-primary-emphasis" th:text="${d.deliveryStatus}"></span>
+                </div>
+
+                <div class="cust-box mb-3">
+                    <p class="mb-1"><i class="bi bi-person-fill text-primary"></i> <strong th:text="${d.order.customer.name}"></strong></p>
+                    <p class="mb-1"><i class="bi bi-telephone-fill text-primary"></i> <span th:text="${d.order.customer.phone}"></span></p>
+                    <p class="mb-0"><i class="bi bi-geo-alt-fill text-primary"></i> <span th:text="${d.order.deliveryAddress}"></span></p>
+                </div>
+
+                <p class="mb-3 small text-muted">Total: Rs. <span th:text="${d.order.totalAmount}"></span></p>
+
+                <ul class="steps">
+                    <li class="done">Assigned</li>
+                    <li th:classappend="${d.deliveryStatus == 'PICKED_UP' or d.deliveryStatus == 'IN_TRANSIT' or d.deliveryStatus == 'DELIVERED'} ? 'done'">Picked Up</li>
+                    <li th:classappend="${d.deliveryStatus == 'IN_TRANSIT' or d.deliveryStatus == 'DELIVERED'} ? 'done'">In Transit</li>
+                    <li th:classappend="${d.deliveryStatus == 'DELIVERED'} ? 'done'">Delivered</li>
+                </ul>
+
+                <form th:if="${d.deliveryStatus == 'ASSIGNED'}" th:action="@{/delivery/{id}/update-status(id=${d.deliveryId})}" method="post">
+                    <input type="hidden" name="status" value="PICKED_UP">
+                    <button type="submit" class="btn btn-blue btn-sm w-100">Mark as Picked Up</button>
+                </form>
+                <form th:if="${d.deliveryStatus == 'PICKED_UP'}" th:action="@{/delivery/{id}/update-status(id=${d.deliveryId})}" method="post">
+                    <input type="hidden" name="status" value="IN_TRANSIT">
+                    <button type="submit" class="btn btn-warning btn-sm w-100">Start Transit</button>
+                </form>
+                <form th:if="${d.deliveryStatus == 'IN_TRANSIT'}" th:action="@{/delivery/{id}/update-status(id=${d.deliveryId})}" method="post">
+                    <input type="hidden" name="status" value="DELIVERED">
+                    <button type="submit" class="btn btn-success btn-sm w-100">Mark as Delivered</button>
+                </form>
+                <p th:if="${d.deliveryStatus == 'DELIVERED'}" class="text-success small mb-0 text-center">Completed ✔</p>
+            </div>
+        </div>
+        <p th:if="${deliveries.isEmpty()}" class="text-muted">No deliveries assigned yet.</p>
+    </div>
+</div>
+</body>
+</html>
