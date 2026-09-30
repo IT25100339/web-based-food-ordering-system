@@ -54,6 +54,13 @@ public class DeliveryService {
 
     public Delivery assignRider(Long deliveryId, Long riderId) {
         Delivery delivery = getById(deliveryId);
+
+        // guard against two riders accepting the same delivery at the same time
+        // (e.g. two browser tabs, one stale) - only a still-PENDING delivery can be accepted
+        if (!"PENDING".equals(delivery.getDeliveryStatus())) {
+            throw new IllegalStateException("This delivery has already been accepted by another rider.");
+        }
+
         Rider rider = riderService.getRiderById(riderId);
 
         delivery.setRider(rider);
