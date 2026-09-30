@@ -15,7 +15,7 @@ public class RiderService {
 
     public Rider registerRider(Rider rider) {
         if (rider.getPassword() == null || rider.getPassword().isBlank()) {
-            rider.setPassword("rider123");
+            rider.setPassword("Rider@123");
         }
         return riderRepository.save(rider);
     }
@@ -43,6 +43,37 @@ public class RiderService {
         rider.setPhoneNumber(updated.getPhoneNumber());
         rider.setVehicleNumber(updated.getVehicleNumber());
         rider.setStatus(updated.getStatus());
+        return riderRepository.save(rider);
+    }
+
+    /**
+     * Rider self-service profile update: name, phone number (their login username) and
+     * vehicle number, plus an optional password change (requires the current password).
+     */
+    public Rider updateProfile(Long id, String name, String phoneNumber, String vehicleNumber,
+                               String currentPassword, String newPassword) {
+        Rider rider = getRiderById(id);
+
+        // phone number doubles as the login username, so guard against duplicates
+        if (phoneNumber != null && !phoneNumber.equals(rider.getPhoneNumber())) {
+            riderRepository.findByPhoneNumber(phoneNumber).ifPresent(existing -> {
+                if (!existing.getRiderId().equals(id)) {
+                    throw new IllegalArgumentException("That phone number is already used by another rider.");
+                }
+            });
+        }
+
+        rider.setName(name);
+        rider.setPhoneNumber(phoneNumber);
+        rider.setVehicleNumber(vehicleNumber);
+
+        if (newPassword != null && !newPassword.isBlank()) {
+            if (currentPassword == null || !currentPassword.equals(rider.getPassword())) {
+                throw new IllegalArgumentException("Current password is incorrect.");
+            }
+            rider.setPassword(newPassword);
+        }
+
         return riderRepository.save(rider);
     }
 
