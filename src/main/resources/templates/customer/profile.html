@@ -13,6 +13,7 @@
     .btn-orange:hover{background:#e85a2a; color:#fff;}
     .card{border:none; border-radius:16px;}
     .form-control{border-radius:10px;}
+    .is-invalid{border-color:#dc3545;}
   </style>
 </head>
 <body>
@@ -30,25 +31,27 @@
   <p th:if="${success}" class="alert alert-success py-2 small">Profile updated successfully.</p>
 
   <div class="card p-4 shadow-sm">
-    <form th:action="@{/customer/profile/update}" th:object="${customer}" method="post">
-      <input type="hidden" th:field="*{customerId}" />
-
+    <form th:action="@{/customer/profile/update}" method="post">
       <div class="mb-3">
         <label class="form-label small fw-semibold">Full Name</label>
-        <input type="text" class="form-control" th:field="*{name}" required>
+        <input type="text" name="name" class="form-control" th:classappend="${nameError} ? 'is-invalid' : ''"
+               th:value="${customer.name}" required>
+        <div class="text-danger small mt-1" th:if="${nameError}" th:text="${nameError}"></div>
       </div>
       <div class="mb-3">
         <label class="form-label small fw-semibold">Email</label>
-        <input type="email" class="form-control" th:field="*{email}" readonly disabled>
+        <input type="email" class="form-control" th:value="${customer.email}" readonly disabled>
         <small class="text-muted">Email can't be changed.</small>
       </div>
       <div class="mb-3">
         <label class="form-label small fw-semibold">Phone</label>
-        <input type="text" class="form-control" th:field="*{phone}" placeholder="e.g. 0771234567">
+        <input type="text" name="phone" class="form-control" th:classappend="${phoneError} ? 'is-invalid' : ''"
+               th:value="${customer.phone}" placeholder="9-15 digits, no spaces" required>
+        <div class="text-danger small mt-1" th:if="${phoneError}" th:text="${phoneError}"></div>
       </div>
       <div class="mb-4">
         <label class="form-label small fw-semibold">Delivery Address</label>
-        <textarea class="form-control" th:field="*{address}" rows="3" placeholder="Your default delivery address"></textarea>
+        <textarea name="address" class="form-control" rows="3" th:text="${customer.address}" placeholder="Your default delivery address"></textarea>
       </div>
       <button type="submit" class="btn btn-orange w-100">Save Changes</button>
     </form>
