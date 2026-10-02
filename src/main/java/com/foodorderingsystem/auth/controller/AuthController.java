@@ -107,4 +107,59 @@ public class AuthController {
         session.invalidate();
         return "redirect:/";
     }
+
+    // ---- Forgot password (customer only) ----
+
+    @GetMapping("/forgot-password")
+    public String showForgotPasswordForm() {
+        return "forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(@RequestParam String email, Model model) {
+        String token = customerService.generateResetToken(email);
+        model.addAttribute("email", email);
+        if (token != null) {
+            // Email sending isn't configured in this dev project - the "sent" link is shown directly
+            // here so the flow can be demoed end-to-end without a real mail server.
+            model.addAttribute("resetLink", "/reset-password/" + token);
+        }
+        // Same confirmation message whether or not the email exists (don't reveal registered emails)
+        return "forgot-password-sent";
+    }
+
+    @GetMapping("/reset-password/{token}")
+    public String showResetPasswordForm(@PathVariable String token, Model model) {
+        boolean valid = customerService.findByValidResetToken(token).isPresent();
+        model.addAttribute("token", token);
+        model.addAttribute("valid", valid);
+        return "reset-password";
+    }
+
+    @PostMapping("/reset-password")
+    public String processResetPassword(@RequestParam String token,
+                                       @RequestParam String newPassword,
+                                       @RequestParam String confirmPassword,
+                                       Model model) {
+        var customerOpt = customerService.findByValidResetToken(token);
+        if (customerOpt.isEmpty()) {
+            model.addAttribute("token", token);
+            model.addAttribute("valid", false);
+            return "reset-password";
+        }
+        if (!newPassword.matches("^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>_\\-]).{8,}$")) {
+            model.addAttribute("token", token);
+            model.addAttribute("valid", true);
+            model.addAttribute("error", "Password must be at least 8 characters and include a number and a special character.");
+            return "reset-password";
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("token", token);
+            model.addAttribute("valid", true);
+            model.addAttribute("error", "Passwords don't match.");
+            return "reset-password";
+        }
+        customerService.resetPassword(customerOpt.get(), newPassword);
+        return "redirect:/login?reset=success";
+    }
 }
