@@ -47,27 +47,6 @@
     </div>
   </div>
 
-  <div class="row g-4 mb-4">
-    <div class="col-md-4">
-      <div class="card p-4 shadow-sm h-100">
-        <h6 class="mb-3">Top-Selling Items</h6>
-        <canvas id="topItemsChart" height="150"></canvas>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card p-4 shadow-sm h-100">
-        <h6 class="mb-3">Weekly Order Volume</h6>
-        <canvas id="weeklyChart" height="150"></canvas>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card p-4 shadow-sm h-100">
-        <h6 class="mb-3">Rider Performance</h6>
-        <canvas id="riderChart" height="150"></canvas>
-      </div>
-    </div>
-  </div>
-
   <h5 class="mb-3">Manage ExpressMeal</h5>
   <div class="row g-4">
     <div class="col-md-4">
@@ -100,6 +79,12 @@
         <h6>Feedback</h6><p class="text-muted small mb-0">Customer ratings and reviews.</p>
       </a>
     </div>
+    <div class="col-md-4">
+      <a th:href="@{/admin/customers}" class="manage-card">
+        <div class="manage-icon"><i class="bi bi-people"></i></div>
+        <h6>Customers</h6><p class="text-muted small mb-0">View, add, edit or remove customers.</p>
+      </a>
+    </div>
   </div>
 </div>
 
@@ -109,12 +94,6 @@
   const monthRevenues = /*[[${monthRevenues}]]*/ [];
   const statusLabels = /*[[${statusLabels}]]*/ [];
   const statusCounts = /*[[${statusCounts}]]*/ [];
-  const topItemLabels = /*[[${topItemLabels}]]*/ [];
-  const topItemCounts = /*[[${topItemCounts}]]*/ [];
-  const weekLabels = /*[[${weekLabels}]]*/ [];
-  const weekCounts = /*[[${weekCounts}]]*/ [];
-  const riderLabels = /*[[${riderLabels}]]*/ [];
-  const riderCounts = /*[[${riderCounts}]]*/ [];
 
   new Chart(document.getElementById('revenueChart'), {
     type: 'line',
@@ -143,33 +122,6 @@
       }]
     },
     options: { plugins: { legend: { position: 'bottom' } } }
-  });
-
-  new Chart(document.getElementById('topItemsChart'), {
-    type: 'bar',
-    data: {
-      labels: topItemLabels,
-      datasets: [{ label: 'Qty sold', data: topItemCounts, backgroundColor: '#FF6B35' }]
-    },
-    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
-  });
-
-  new Chart(document.getElementById('weeklyChart'), {
-    type: 'bar',
-    data: {
-      labels: weekLabels,
-      datasets: [{ label: 'Orders', data: weekCounts, backgroundColor: '#3b82f6' }]
-    },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-  });
-
-  new Chart(document.getElementById('riderChart'), {
-    type: 'bar',
-    data: {
-      labels: riderLabels,
-      datasets: [{ label: 'Deliveries completed', data: riderCounts, backgroundColor: '#22c55e' }]
-    },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
   });
 </script>
 </body>
