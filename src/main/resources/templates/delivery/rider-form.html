@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><title>Rider Details - ExpressMeal Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    *{font-family:'Poppins',sans-serif;}
+    body{background:#F7F8FA;}
+    .navbar{background:#1C1C1E;}
+    .brand span{color:#FF6B35;}
+    .btn-orange{background:#FF6B35; border:none; color:#fff; border-radius:50px; font-weight:600;}
+    .btn-orange:hover{background:#e85a2a; color:#fff;}
+    .card{border:none; border-radius:16px; box-shadow:0 4px 16px rgba(0,0,0,.05);}
+    .form-control:focus, .form-select:focus{border-color:#FF6B35; box-shadow:0 0 0 3px rgba(255,107,53,.15);}
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-dark px-4 py-3">
+  <span class="navbar-brand brand fw-bold"><i class="bi bi-shield-lock-fill me-1"></i>Express<span>Meal</span> Admin</span>
+  <a th:href="@{/delivery/riders}" class="btn btn-outline-light btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Riders</a>
+</nav>
+
+<div class="container my-5" style="max-width:500px;">
+  <h3 class="mb-4">Rider Details</h3>
+  <form th:action="@{/delivery/riders/save}" th:object="${rider}" method="post" class="card p-4">
+    <input type="hidden" th:field="*{riderId}" />
+    <div class="mb-3"><label class="form-label small fw-semibold">Name</label><input class="form-control" th:field="*{name}" required></div>
+    <div class="mb-3"><label class="form-label small fw-semibold">Phone Number</label><input class="form-control" th:field="*{phoneNumber}" required></div>
+    <div class="mb-3"><label class="form-label small fw-semibold">Vehicle Number</label><input class="form-control" th:field="*{vehicleNumber}"></div>
+    <div class="mb-3">
+      <label class="form-label small fw-semibold">Login Password (share this with the rider)</label>
+      <input class="form-control" th:field="*{password}">
+      <small class="text-muted">Default is "Rider@123" if left unchanged. Must be 8+ characters with a number and special character.</small>
+    </div>
+    <div class="mb-4">
+      <label class="form-label small fw-semibold">Status</label>
+      <select class="form-select" th:field="*{status}">
+        <option value="AVAILABLE">Available</option>
+        <option value="ON_DELIVERY">On Delivery</option>
+        <option value="OFFLINE">Offline</option>
+      </select>
+    </div>
+    <div class="d-flex gap-2">
+      <a th:href="@{/delivery/riders}" class="btn btn-outline-secondary flex-grow-1 rounded-pill">Cancel</a>
+      <button type="submit" class="btn btn-orange flex-grow-1">Save Rider</button>
+    </div>
+  </form>
+</div>
+</body>
+</html>
+
