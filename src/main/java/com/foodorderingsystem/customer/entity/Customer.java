@@ -20,12 +20,13 @@ public class Customer {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Enter a valid email")
-    @Column(unique = true)
+    @Column(unique = true)    //Prevents duplicate email values at the database level.
     private String email;
 
     @NotBlank(message = "Password is required")
     @Pattern(
-            regexp = "^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>_\\-]).{8,}$",
+            regexp = "^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>_\\-]).{8,}$",    //Applies a regular-expression rule,
+                                                                               //such as the phone-number and password requirements.
             message = "Password must be at least 8 characters and include a number and a special character"
     )
     private String password;
