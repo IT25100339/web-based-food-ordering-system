@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Manage Menu - ExpressMeal Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        *{font-family:'Poppins',sans-serif;}
+        .navbar{background:#1C1C1E;}
+        .brand span{color:#FF6B35;}
+        .btn-orange{background:#FF6B35; border:none; color:#fff; border-radius:50px; font-weight:600; transition:.2s;}
+        .btn-orange:hover{background:#e85a2a; color:#fff;}
+        .card{border:none; border-radius:16px;}
+        table thead{background:#FFF8F2;}
+    </style>
+</head>
+<body style="background:#FFF8F2;">
+
+<nav class="navbar navbar-dark px-4 py-3">
+    <span class="navbar-brand brand fw-bold">Express<span>Meal</span> Admin</span>
+    <a th:href="@{/admin/dashboard}" class="btn btn-outline-light btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Dashboard</a>
+</nav>
+
+<div class="container my-5">
+    <div class="alert alert-success toast-msg" th:if="${success}" th:text="${success}"></div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Manage Menu Items</h3>
+        <a th:href="@{/restaurant/manage/new}" class="btn btn-orange"><i class="bi bi-plus-lg"></i> Add Item</a>
+    </div>
+    <div class="card shadow-sm p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr><th class="ps-4">Image</th><th>Name</th><th>Category</th><th>Price</th><th>Available</th><th class="text-end pe-4">Actions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${items}">
+                    <td class="ps-4">
+                        <img th:if="${item.imageUrl != null and !item.imageUrl.isEmpty()}"
+                             th:src="${item.imageUrl}" style="width:50px; height:50px; object-fit:cover; border-radius:8px;">
+                    </td>
+                    <td th:text="${item.name}"></td>
+                    <td th:text="${item.category}"></td>
+                    <td th:text="'Rs. ' + ${item.price}"></td>
+                    <td>
+                        <span class="badge rounded-pill" th:classappend="${item.available} ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'"
+                              th:text="${item.available} ? 'Yes' : 'No'"></span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <a th:href="@{/restaurant/manage/edit/{id}(id=${item.itemId})}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        <a th:href="@{/restaurant/manage/delete/{id}(id=${item.itemId})}" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Delete this menu item? This cannot be undone.');"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+                <tr th:if="${items.isEmpty()}"><td colspan="6" class="text-center text-muted py-5">No menu items yet.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    document.querySelectorAll('.toast-msg').forEach(el => {
+        setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3500);
+    });
+</script>
+</body>
+</html>
