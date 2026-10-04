@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/restaurant")
@@ -49,17 +50,21 @@ public class RestaurantController {
     }
 
     @PostMapping("/manage/save")
-    public String save(@Valid @ModelAttribute("item") MenuItem item, BindingResult result) {
+    public String save(@Valid @ModelAttribute("item") MenuItem item, BindingResult result,
+                        RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             return "restaurant/item-form";
         }
+        boolean isNew = item.getItemId() == null;
         menuItemService.save(item);
+        redirectAttributes.addFlashAttribute("success", isNew ? "Menu item added." : "Menu item updated.");
         return "redirect:/restaurant/manage";
     }
 
     @GetMapping("/manage/delete/{id}")
-    public String delete(@PathVariable Long id) {
+    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         menuItemService.delete(id);
+        redirectAttributes.addFlashAttribute("success", "Menu item deleted.");
         return "redirect:/restaurant/manage";
     }
 }
