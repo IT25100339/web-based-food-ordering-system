@@ -18,10 +18,11 @@ public class Rider {
     private String name;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^[0-9]{9,15}$", message = "Phone number must contain 9-15 digits only")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be exactly 10 digits")
     @Column(unique = true)
     private String phoneNumber;
 
+    @NotBlank(message = "Vehicle number is required")
     private String vehicleNumber;
 
     @Pattern(

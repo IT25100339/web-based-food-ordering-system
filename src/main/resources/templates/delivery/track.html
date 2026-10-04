@@ -39,10 +39,11 @@
             <p class="mb-0"><i class="bi bi-telephone-fill text-warning"></i> <span th:text="${delivery.rider.phoneNumber}"></span></p>
         </div>
 
-        <!-- [UPDATE] Gets the Customer's Address via th:data-address -->        <div id="map"
-                                                                                      th:data-address="${delivery.order.deliveryAddress}"
-                                                                                      style="width: 100%; height: 250px; border-radius: 12px; z-index: 1;"
-                                                                                      class="mb-3"></div>
+        <!-- Dynamic Map Container -->
+        <div id="map"
+             th:data-address="${delivery.order.deliveryAddress}"
+             style="width: 100%; height: 250px; border-radius: 12px; z-index: 1;"
+             class="mb-3"></div>
 
         <ul class="steps mb-3">
             <li th:classappend="${delivery.deliveryStatus != null} ? 'done'">Order Confirmed</li>
@@ -60,7 +61,8 @@
 <!-- Leaflet JS Library -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- [UPDATE] Dynamic Geocoding Script (Cleans the address and pins it on the map) --><script>
+<!-- Clean JS Script with Correct Brackets & Formatting -->
+<script>
     document.addEventListener("DOMContentLoaded", function() {
         var mapElement = document.getElementById('map');
         if (mapElement) {
@@ -75,12 +77,15 @@
             }).addTo(map);
 
             if (rawAddress) {
-// Search by removing extra numbers after the '|' symbol and house numbers at the beginnin            var cleanAddress = rawAddress.split('|')[0]
-            .replace(/^[0-9\/\-A-Za-z]+,\s*/, '')
+                // Remove extra numbers after '|' and house numbers at the beginning
+                var cleanAddress = rawAddress.split('|')[0]
+                    .replace(/^[0-9\/\-A-Za-z]+,\s*/, '')
                     .trim();
 
                 fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(cleanAddress + ', Sri Lanka'))
-                    .then(function(res) { return res.json(); })
+                    .then(function(res) {
+                        return res.json();
+                    })
                     .then(function(data) {
                         if (data && data.length > 0) {
                             var lat = parseFloat(data[0].lat);

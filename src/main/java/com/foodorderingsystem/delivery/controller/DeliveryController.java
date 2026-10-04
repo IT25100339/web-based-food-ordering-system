@@ -25,11 +25,15 @@ public class DeliveryController {
     @Value("${google.maps.api.key}")
     private String googleMapsApiKey;
 
+    private boolean notAdmin(HttpSession session) {
+        Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
+        return isAdmin == null || !isAdmin;
+    }
+
     // ---- Admin: view/manage all deliveries ----
     @GetMapping("/list")
     public String listDeliveries(HttpSession session, Model model) {
-        Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
-        if (isAdmin == null || !isAdmin) {
+        if (notAdmin(session)) {
             return "redirect:/login";
         }
         model.addAttribute("deliveries", deliveryService.getAllDeliveries());
@@ -37,14 +41,20 @@ public class DeliveryController {
     }
 
     @GetMapping("/assign/{deliveryId}")
-    public String showAssignForm(@PathVariable Long deliveryId, Model model) {
+    public String showAssignForm(@PathVariable Long deliveryId, HttpSession session, Model model) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         model.addAttribute("delivery", deliveryService.getById(deliveryId));
         model.addAttribute("availableRiders", riderService.getAvailableRiders());
         return "delivery/assign-rider";
     }
 
     @PostMapping("/assign")
-    public String assignRider(@RequestParam Long deliveryId, @RequestParam Long riderId) {
+    public String assignRider(@RequestParam Long deliveryId, @RequestParam Long riderId, HttpSession session) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         deliveryService.assignRider(deliveryId, riderId);
         return "redirect:/delivery/list";
     }
@@ -81,8 +91,13 @@ public class DeliveryController {
     // Status update - used by both admin (delivery-list page) and rider (rider-dashboard page)
     @PostMapping("/{id}/update-status")
     public String updateStatus(@PathVariable Long id, @RequestParam String status, HttpSession session) {
+        Rider rider = (Rider) session.getAttribute("loggedInRider");
+        boolean isAdminSession = !notAdmin(session);
+        if (rider == null && !isAdminSession) {
+            return "redirect:/login";
+        }
         deliveryService.updateStatus(id, status);
-        if (session.getAttribute("loggedInRider") != null) {
+        if (rider != null) {
             return "redirect:/delivery/rider-dashboard";
         }
         return "redirect:/delivery/list";
@@ -119,9 +134,14 @@ public class DeliveryController {
             model.addAttribute("error", "Name and phone number can't be empty.");
             return "delivery/rider-profile";
         }
-        if (!phoneNumber.matches("^[0-9]{9,15}$")) {
+        if (!phoneNumber.matches("^[0-9]{10}$")) {
             model.addAttribute("rider", riderService.getRiderById(sessionRider.getRiderId()));
-            model.addAttribute("error", "Phone number must contain 9-15 digits only.");
+            model.addAttribute("error", "Phone number must be exactly 10 digits.");
+            return "delivery/rider-profile";
+        }
+        if (vehicleNumber == null || vehicleNumber.isBlank()) {
+            model.addAttribute("rider", riderService.getRiderById(sessionRider.getRiderId()));
+            model.addAttribute("error", "Vehicle number can't be empty.");
             return "delivery/rider-profile";
         }
 
