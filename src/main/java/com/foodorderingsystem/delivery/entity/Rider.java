@@ -32,4 +32,8 @@ public class Rider {
     private String password = "Rider@123"; // default password for login (admin can change this on registration)
 
     private String status = "AVAILABLE"; // AVAILABLE, ON_DELIVERY, OFFLINE
+
+    // Forgot-password flow: a short-lived random token emailed (simulated) to reset the password
+    private String resetToken;
+    private java.time.LocalDateTime resetTokenExpiry;
 }
