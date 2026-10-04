@@ -2,6 +2,7 @@ package com.foodorderingsystem.restaurant.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
@@ -19,11 +20,14 @@ public class MenuItem {
 
     private String description;
 
+    @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
     private Double price;
 
+    @NotBlank(message = "Category is required")
     private String category; // e.g. Rice, Short Eats, Drinks, Desserts
 
+    @NotBlank(message = "Image URL is required")
     private String imageUrl;
 
     private boolean available = true;
