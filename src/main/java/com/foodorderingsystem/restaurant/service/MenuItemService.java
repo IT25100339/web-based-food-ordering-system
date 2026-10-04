@@ -25,21 +25,6 @@ public class MenuItemService {
         return menuItemRepository.findByCategoryAndAvailableTrue(category);
     }
 
-    // Combined category + search filter (search matches item name, case-insensitive)
-    public List<MenuItem> searchAvailableItems(String category, String search) {
-        List<MenuItem> items = (category != null && !category.isBlank())
-                ? getAvailableItemsByCategory(category)
-                : getAvailableItems();
-
-        if (search != null && !search.isBlank()) {
-            String q = search.trim().toLowerCase();
-            items = items.stream()
-                    .filter(i -> i.getName() != null && i.getName().toLowerCase().contains(q))
-                    .toList();
-        }
-        return items;
-    }
-
     public List<String> getAvailableCategories() {
         return menuItemRepository.findByAvailableTrue().stream()
                 .map(MenuItem::getCategory)

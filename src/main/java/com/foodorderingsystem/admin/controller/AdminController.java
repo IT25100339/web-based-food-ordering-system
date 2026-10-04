@@ -1,5 +1,6 @@
 package com.foodorderingsystem.admin.controller;
 
+import com.foodorderingsystem.delivery.service.DeliveryService;
 import com.foodorderingsystem.order.service.OrderService;
 import com.foodorderingsystem.payment.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -22,6 +22,9 @@ public class AdminController {
 
     @Autowired
     private PaymentService paymentService;
+
+    @Autowired
+    private DeliveryService deliveryService;
 
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
@@ -41,6 +44,21 @@ public class AdminController {
         Map<String, Long> statusBreakdown = orderService.getOrderStatusBreakdown();
         model.addAttribute("statusLabels", new ArrayList<>(statusBreakdown.keySet()));
         model.addAttribute("statusCounts", new ArrayList<>(statusBreakdown.values()));
+
+        // Top-selling menu items (bar chart)
+        Map<String, Integer> topItems = orderService.getTopSellingItems();
+        model.addAttribute("topItemLabels", new ArrayList<>(topItems.keySet()));
+        model.addAttribute("topItemCounts", new ArrayList<>(topItems.values()));
+
+        // Weekly order volume (bar chart)
+        Map<String, Long> weeklyVolume = orderService.getWeeklyOrderVolume();
+        model.addAttribute("weekLabels", new ArrayList<>(weeklyVolume.keySet()));
+        model.addAttribute("weekCounts", new ArrayList<>(weeklyVolume.values()));
+
+        // Rider performance (bar chart)
+        Map<String, Long> riderPerf = deliveryService.getRiderPerformance();
+        model.addAttribute("riderLabels", new ArrayList<>(riderPerf.keySet()));
+        model.addAttribute("riderCounts", new ArrayList<>(riderPerf.values()));
 
         return "admin/dashboard";
     }

@@ -18,13 +18,14 @@ public class RestaurantController {
 
     // Customer-facing menu browsing (optionally filtered by category)
     @GetMapping("/menu")
-    public String viewMenu(@RequestParam(required = false) String category,
-                            @RequestParam(required = false) String search,
-                            Model model) {
-        model.addAttribute("items", menuItemService.searchAvailableItems(category, search));
+    public String viewMenu(@RequestParam(required = false) String category, Model model) {
+        if (category != null && !category.isBlank()) {
+            model.addAttribute("items", menuItemService.getAvailableItemsByCategory(category));
+        } else {
+            model.addAttribute("items", menuItemService.getAvailableItems());
+        }
         model.addAttribute("categories", menuItemService.getAvailableCategories());
         model.addAttribute("selectedCategory", category);
-        model.addAttribute("search", search);
         return "restaurant/menu";
     }
 
