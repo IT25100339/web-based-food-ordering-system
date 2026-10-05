@@ -70,6 +70,7 @@ public class DeliveryController {
         model.addAttribute("deliveries", deliveryService.getDeliveriesForRider(rider));
         model.addAttribute("pendingDeliveries", deliveryService.getPendingDeliveries());
         model.addAttribute("googleMapsApiKey", googleMapsApiKey);
+        model.addAttribute("stats", deliveryService.getRiderStats(rider));
         return "delivery/rider-dashboard";
     }
 
