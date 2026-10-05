@@ -2,6 +2,7 @@ package com.foodorderingsystem.restaurant.controller;
 
 import com.foodorderingsystem.restaurant.entity.MenuItem;
 import com.foodorderingsystem.restaurant.service.MenuItemService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,6 +17,12 @@ public class RestaurantController {
 
     @Autowired
     private MenuItemService menuItemService;
+
+    // Menu management (everything under /manage) is admin-only; /menu stays public for customers
+    private boolean notAdmin(HttpSession session) {
+        Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
+        return isAdmin == null || !isAdmin;
+    }
 
     // Customer-facing menu browsing (optionally filtered by category)
     @GetMapping("/menu")
@@ -32,26 +39,38 @@ public class RestaurantController {
 
     // Admin: manage menu
     @GetMapping("/manage")
-    public String manageMenu(Model model) {
+    public String manageMenu(HttpSession session, Model model) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         model.addAttribute("items", menuItemService.getAllItems());
         return "restaurant/manage";
     }
 
     @GetMapping("/manage/new")
-    public String showAddForm(Model model) {
+    public String showAddForm(HttpSession session, Model model) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         model.addAttribute("item", new MenuItem());
         return "restaurant/item-form";
     }
 
     @GetMapping("/manage/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
+    public String showEditForm(@PathVariable Long id, HttpSession session, Model model) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         model.addAttribute("item", menuItemService.getById(id));
         return "restaurant/item-form";
     }
 
     @PostMapping("/manage/save")
     public String save(@Valid @ModelAttribute("item") MenuItem item, BindingResult result,
-                        RedirectAttributes redirectAttributes) {
+                        HttpSession session, RedirectAttributes redirectAttributes) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         if (result.hasErrors()) {
             return "restaurant/item-form";
         }
@@ -62,7 +81,10 @@ public class RestaurantController {
     }
 
     @GetMapping("/manage/delete/{id}")
-    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String delete(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         menuItemService.delete(id);
         redirectAttributes.addFlashAttribute("success", "Menu item deleted.");
         return "redirect:/restaurant/manage";
