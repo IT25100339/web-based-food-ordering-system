@@ -3,6 +3,8 @@ package com.foodorderingsystem.feedback.controller;
 import com.foodorderingsystem.customer.entity.Customer;
 import com.foodorderingsystem.feedback.entity.Feedback;
 import com.foodorderingsystem.feedback.service.FeedbackService;
+import com.foodorderingsystem.feedback.strategy.FeedbackFilterFactory;
+import com.foodorderingsystem.feedback.strategy.FeedbackFilterStrategy;
 import com.foodorderingsystem.order.service.OrderService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class FeedbackController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private FeedbackFilterFactory feedbackFilterFactory;
 
     // ---- Create ----
     @GetMapping("/add/{orderId}")
@@ -82,14 +87,19 @@ public class FeedbackController {
                                HttpSession session, Model model) {
         Customer loggedInCustomer = (Customer) session.getAttribute("loggedInCustomer");
         Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
+        Long loggedInCustomerId = loggedInCustomer != null ? loggedInCustomer.getCustomerId() : null;
 
-        List<Feedback> feedbackList;
-        if ("mine".equals(filter) && loggedInCustomer != null) {
-            feedbackList = feedbackService.getByCustomer(loggedInCustomer.getCustomerId());
-        } else {
+        // "mine" only makes sense when someone is actually logged in - fall back to "all" otherwise
+        if ("mine".equals(filter) && loggedInCustomer == null) {
             filter = "all";
-            feedbackList = feedbackService.getAll();
         }
+
+        // Strategy pattern: FeedbackFilterFactory hands back whichever FeedbackFilterStrategy
+        // matches the requested code (all / mine / high / low) - this controller never has
+        // to know the filtering rule itself, so adding a new filter later needs no change here.
+        FeedbackFilterStrategy strategy = feedbackFilterFactory.getStrategy(filter);
+        List<Feedback> feedbackList = strategy.filter(feedbackService.getAll(), loggedInCustomerId);
+        filter = strategy.getCode();
 
         model.addAttribute("feedbackList", feedbackList);
         model.addAttribute("averageRating", feedbackService.getAverageRating());
