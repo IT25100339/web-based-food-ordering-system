@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><title>Deliveries - ExpressMeal Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        *{font-family:'Poppins',sans-serif;}
+        body{background:#FFF8F2;}
+        .navbar{background:#1C1C1E;}
+        .brand span{color:#FF6B35;}
+        .btn-orange{background:#FF6B35; border:none; color:#fff; border-radius:50px; font-weight:600;}
+        .btn-orange:hover{background:#e85a2a; color:#fff;}
+        .card{border:none; border-radius:16px;}
+        table thead{background:#FFF8F2;}
+        .badge-status{border-radius:30px; padding:5px 12px; font-weight:600; font-size:.75rem;}
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark px-4 py-3">
+    <span class="navbar-brand brand fw-bold"><i class="bi bi-shield-lock-fill me-1"></i>Express<span>Meal</span> Admin</span>
+    <div>
+        <a th:href="@{/admin/dashboard}" class="btn btn-outline-light btn-sm rounded-pill me-2"><i class="bi bi-arrow-left"></i> Dashboard</a>
+        <a th:href="@{/logout}" class="btn btn-orange btn-sm">Logout</a>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <h3 class="mb-4">All Deliveries</h3>
+    <div class="card shadow-sm p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th class="ps-4">Order #</th><th>Customer</th><th>Address</th><th>Rider</th><th>Status</th><th class="pe-4">Actions</th></tr></thead>
+                <tbody>
+                <tr th:each="d : ${deliveries}">
+                    <td class="ps-4 fw-semibold" th:text="'#' + ${d.order.orderId}"></td>
+                    <td th:text="${d.order.customer.name} + ' (' + ${d.order.customer.phone} + ')'"></td>
+                    <td th:text="${d.order.deliveryAddress}"></td>
+                    <td th:text="${d.rider != null ? d.rider.name : 'Not Assigned'}"></td>
+                    <td><span class="badge-status bg-warning-subtle text-warning-emphasis" th:text="${d.deliveryStatus}"></span></td>
+                    <td class="pe-4">
+                        <a th:if="${d.deliveryStatus == 'PENDING'}" th:href="@{/delivery/assign/{id}(id=${d.deliveryId})}" class="btn btn-sm btn-orange">Assign Rider</a>
+
+                        <form th:if="${d.deliveryStatus == 'ASSIGNED'}" th:action="@{/delivery/{id}/update-status(id=${d.deliveryId})}" method="post" class="d-inline">
+                            <input type="hidden" name="status" value="PICKED_UP">
+                            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill">Mark Picked Up</button>
+                        </form>
+                        <form th:if="${d.deliveryStatus == 'PICKED_UP'}" th:action="@{/delivery/{id}/update-status(id=${d.deliveryId})}" method="post" class="d-inline">
+                            <input type="hidden" name="status" value="IN_TRANSIT">
+                            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill">Start Transit</button>
+                        </form>
+                        <form th:if="${d.deliveryStatus == 'IN_TRANSIT'}" th:action="@{/delivery/{id}/update-status(id=${d.deliveryId})}" method="post" class="d-inline">
+                            <input type="hidden" name="status" value="DELIVERED">
+                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill">Mark Delivered</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${deliveries.isEmpty()}">
+                    <td colspan="6" class="text-center text-muted py-5">No deliveries found.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
