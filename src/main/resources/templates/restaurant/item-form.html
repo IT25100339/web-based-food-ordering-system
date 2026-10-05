@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Menu Item Form - ExpressMeal Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        *{font-family:'Poppins',sans-serif;}
+        .navbar{background:#1C1C1E;}
+        .brand span{color:#FF6B35;}
+        .btn-orange{background:#FF6B35; border:none; color:#fff; border-radius:50px; font-weight:600; transition:.2s;}
+        .btn-orange:hover{background:#e85a2a; color:#fff;}
+        .card{border:none; border-radius:16px;}
+        .form-control{border-radius:10px; padding:10px 14px; border:1.5px solid #eee;}
+        .form-control:focus{border-color:#FF6B35; box-shadow:0 0 0 3px rgba(255,107,53,.15);}
+    </style>
+</head>
+<body style="background:#FFF8F2;">
+
+<nav class="navbar navbar-dark px-4 py-3">
+    <span class="navbar-brand brand fw-bold">Express<span>Meal</span> Admin</span>
+    <a th:href="@{/restaurant/manage}" class="btn btn-outline-light btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Menu Items</a>
+</nav>
+
+<div class="container my-5" style="max-width:520px;">
+    <h3 class="mb-4 fw-bold">Menu Item</h3>
+    <form th:action="@{/restaurant/manage/save}" th:object="${item}" method="post" class="card p-4 shadow-sm" id="itemForm" novalidate>
+        <input type="hidden" th:field="*{itemId}" />
+        <div class="mb-3">
+            <label class="form-label small fw-semibold">Name</label>
+            <input class="form-control" id="nameInput" th:field="*{name}" maxlength="80"
+                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''" required>
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+            <div class="text-danger small mt-1" id="nameClientError" style="display:none;">Name is required.</div>
+        </div>
+        <div class="mb-3"><label class="form-label small fw-semibold">Description</label><input class="form-control" th:field="*{description}" maxlength="250"></div>
+        <div class="mb-3">
+            <label class="form-label small fw-semibold">Price (Rs.)</label>
+            <input type="number" step="0.01" min="0.01" class="form-control" id="priceInput" th:field="*{price}"
+                   th:classappend="${#fields.hasErrors('price')} ? 'is-invalid' : ''" required>
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+            <div class="text-danger small mt-1" id="priceClientError" style="display:none;">Price must be greater than 0.</div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-semibold">Category</label>
+            <input class="form-control" id="categoryInput" th:field="*{category}" placeholder="Rice, Short Eats, Drinks..."
+                   th:classappend="${#fields.hasErrors('category')} ? 'is-invalid' : ''" required>
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+            <div class="text-danger small mt-1" id="categoryClientError" style="display:none;">Category is required.</div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-semibold">Image URL</label>
+            <input class="form-control" id="imageUrlInput" th:field="*{imageUrl}" placeholder="https://example.com/photo.jpg"
+                   th:classappend="${#fields.hasErrors('imageUrl')} ? 'is-invalid' : ''" required>
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}"></div>
+            <div class="text-danger small mt-1" id="imageUrlClientError" style="display:none;">Image URL is required.</div>
+            <small class="text-muted">Paste a link to an image (e.g. from Unsplash or Google Images).</small>
+        </div>
+        <div class="mb-4 form-check">
+            <input type="checkbox" class="form-check-input" th:field="*{available}">
+            <label class="form-check-label">Available</label>
+        </div>
+        <button type="submit" class="btn btn-orange" id="itemSaveBtn"><i class="bi bi-check2"></i> Save</button>
+    </form>
+</div>
+<script>
+    const itemForm = document.getElementById('itemForm');
+
+    const fields = [
+        { input: 'nameInput', err: 'nameClientError', test: v => v.trim().length > 0 },
+        { input: 'priceInput', err: 'priceClientError', test: v => { const n = parseFloat(v); return !isNaN(n) && n > 0; } },
+        { input: 'categoryInput', err: 'categoryClientError', test: v => v.trim().length > 0 },
+        { input: 'imageUrlInput', err: 'imageUrlClientError', test: v => v.trim().length > 0 }
+    ];
+
+    function validateField(f) {
+        const input = document.getElementById(f.input);
+        const err = document.getElementById(f.err);
+        const ok = f.test(input.value);
+        input.classList.toggle('is-invalid', !ok);
+        err.style.display = ok ? 'none' : 'block';
+        return ok;
+    }
+
+    fields.forEach(f => {
+        document.getElementById(f.input).addEventListener('input', () => validateField(f));
+    });
+
+    itemForm.addEventListener('submit', function (e) {
+        let valid = true;
+        fields.forEach(f => { if (!validateField(f)) valid = false; });
+
+        if (!valid) {
+            e.preventDefault();
+            return;
+        }
+        const btn = document.getElementById('itemSaveBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+    });
+</script>
+</body>
+</html>

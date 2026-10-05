@@ -35,8 +35,10 @@
     <p class="text-center text-muted small mb-4">Login to continue</p>
 
     <p th:if="${error}" class="alert alert-danger py-2 small" th:text="${error}"></p>
+    <p th:if="${param.reset != null}" class="alert alert-success py-2 small">Password reset successfully - log in with your new password.</p>
 
     <form th:action="@{/login}" method="post" autocomplete="off">
+        <input type="hidden" name="redirect" th:value="${redirect}" th:if="${redirect != null}">
         <div class="role-tabs">
             <input type="radio" name="role" id="rCustomer" value="CUSTOMER" th:checked="${role == null or role == 'CUSTOMER'}">
             <label for="rCustomer"><i class="bi bi-person-fill d-block mb-1"></i>Customer</label>
@@ -50,10 +52,13 @@
             <label class="form-label small fw-semibold" id="idLabel">Email</label>
             <input type="text" name="identifier" class="form-control" required autocomplete="off">
         </div>
-        <div class="mb-4">
+        <div class="mb-2">
             <label class="form-label small fw-semibold">Password</label>
             <input type="password" name="password" class="form-control" required autocomplete="new-password">
         </div>
+        <p class="text-end mb-3" id="forgotPwRow">
+            <a href="#" id="forgotPwLink" class="small" style="color:#FF6B35;">Forgot password?</a>
+        </p>
         <button type="submit" class="btn-login">Login</button>
     </form>
 
@@ -63,11 +68,15 @@
 
 <script>
     const labels = { CUSTOMER: 'Email', RIDER: 'Phone number', ADMIN: 'Admin username' };
+    const forgotPwLinks = { CUSTOMER: '/forgot-password', RIDER: '/rider/forgot-password' };
 
     function updateLabelFromChecked() {
         const checked = document.querySelector('input[name=role]:checked');
         if (checked) {
             document.getElementById('idLabel').innerText = labels[checked.value];
+            const link = forgotPwLinks[checked.value];
+            document.getElementById('forgotPwRow').style.display = link ? '' : 'none';
+            if (link) document.getElementById('forgotPwLink').setAttribute('href', link);
         }
     }
 
