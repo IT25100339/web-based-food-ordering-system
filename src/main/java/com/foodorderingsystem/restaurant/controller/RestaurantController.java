@@ -1,6 +1,7 @@
 package com.foodorderingsystem.restaurant.controller;
 
 import com.foodorderingsystem.restaurant.entity.MenuItem;
+import com.foodorderingsystem.restaurant.factory.MenuItemFactory;
 import com.foodorderingsystem.restaurant.service.MenuItemService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -17,6 +18,9 @@ public class RestaurantController {
 
     @Autowired
     private MenuItemService menuItemService;
+
+    @Autowired
+    private MenuItemFactory menuItemFactory;
 
     // Menu management (everything under /manage) is admin-only; /menu stays public for customers
     private boolean notAdmin(HttpSession session) {
@@ -47,12 +51,15 @@ public class RestaurantController {
         return "restaurant/manage";
     }
 
+    // Factory pattern: MenuItemFactory decides sensible name/price/description/image
+    // defaults for the chosen category - this controller just asks for a category and
+    // doesn't need to know what a "good" Rice item or Drinks item looks like.
     @GetMapping("/manage/new")
-    public String showAddForm(HttpSession session, Model model) {
+    public String showAddForm(@RequestParam(required = false) String template, HttpSession session, Model model) {
         if (notAdmin(session)) {
             return "redirect:/login";
         }
-        model.addAttribute("item", new MenuItem());
+        model.addAttribute("item", menuItemFactory.createDefaultItem(template));
         return "restaurant/item-form";
     }
 
