@@ -16,7 +16,6 @@
         .card{border:none; border-radius:16px; box-shadow:0 4px 16px rgba(0,0,0,.05);}
         .nav-tabs .nav-link{color:#666; font-weight:600; border:none; border-bottom:3px solid transparent;}
         .nav-tabs .nav-link.active{color:#FF6B35; border-bottom-color:#FF6B35; background:transparent;}
-        .stars i{color:#FF6B35;}
     </style>
 </head>
 <body>
@@ -44,13 +43,23 @@
         </li>
     </ul>
 
+    <!-- Admin view: filter by rating using the Strategy pattern (HighRatingFilterStrategy / LowRatingFilterStrategy) -->
+    <ul class="nav nav-tabs mb-4" th:unless="${showTabs}">
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${filter == 'all'} ? 'active'" th:href="@{/feedback/list(filter='all')}">All reviews</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${filter == 'high'} ? 'active'" th:href="@{/feedback/list(filter='high')}">&#11088; High rated (4-5)</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${filter == 'low'} ? 'active'" th:href="@{/feedback/list(filter='low')}">&#9888;&#65039; Low rated (1-2)</a>
+        </li>
+    </ul>
+
     <div class="row g-3">
         <div class="col-md-4" th:each="f : ${feedbackList}">
             <div class="card p-4 h-100 d-flex flex-column">
-                <p class="mb-2 stars">
-                    <i th:each="i : ${#numbers.sequence(1, 5)}" class="bi me-1"
-                       th:classappend="${f.rating >= i} ? 'bi-star-fill' : 'bi-star'"></i>
-                </p>
+                <p class="mb-2" th:utext="${'&#11088;'.repeat(f.rating)}"></p>
                 <p class="text-muted flex-grow-1" th:text="${f.comment}"></p>
                 <small class="text-muted mb-2 fw-semibold" th:text="${f.customer != null ? f.customer.name : 'Anonymous'}"></small>
                 <div th:if="${f.customer != null and loggedInCustomerId != null and f.customer.customerId == loggedInCustomerId}"
