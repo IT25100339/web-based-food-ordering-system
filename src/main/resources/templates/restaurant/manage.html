@@ -26,9 +26,17 @@
 
 <div class="container my-5">
     <div class="alert alert-success toast-msg" th:if="${success}" th:text="${success}"></div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
         <h3 class="fw-bold mb-0">Manage Menu Items</h3>
-        <a th:href="@{/restaurant/manage/new}" class="btn btn-orange"><i class="bi bi-plus-lg"></i> Add Item</a>
+        <a th:href="@{/restaurant/manage/new}" class="btn btn-orange"><i class="bi bi-plus-lg"></i> Add Item (blank)</a>
+    </div>
+    <!-- Factory pattern: each button asks MenuItemFactory for a pre-filled template for that category -->
+    <div class="mb-4 d-flex flex-wrap gap-2">
+        <span class="text-muted small align-self-center me-1">Quick-add from template:</span>
+        <a th:href="@{/restaurant/manage/new(template='Rice')}" class="btn btn-outline-secondary btn-sm rounded-pill">Rice</a>
+        <a th:href="@{/restaurant/manage/new(template='Short Eats')}" class="btn btn-outline-secondary btn-sm rounded-pill">Short Eats</a>
+        <a th:href="@{/restaurant/manage/new(template='Drinks')}" class="btn btn-outline-secondary btn-sm rounded-pill">Drinks</a>
+        <a th:href="@{/restaurant/manage/new(template='Desserts')}" class="btn btn-outline-secondary btn-sm rounded-pill">Desserts</a>
     </div>
     <div class="card shadow-sm p-0">
         <div class="table-responsive">
