@@ -96,7 +96,8 @@ public class AdminCustomerController {
     @PostMapping("/save")
     public String createCustomer(HttpSession session,
                                  @Valid @ModelAttribute("customer") Customer customer,
-                                 BindingResult result, Model model) {
+                                 BindingResult result, Model model,
+                                 RedirectAttributes redirectAttributes) {
         if (notAdmin(session)) {
             return "redirect:/login";
         }
@@ -110,6 +111,7 @@ public class AdminCustomerController {
             return "admin/customer-form";
         }
         customerService.register(customer);
+        redirectAttributes.addFlashAttribute("success", "Customer added.");
         return "redirect:/admin/customers";
     }
 
@@ -130,7 +132,7 @@ public class AdminCustomerController {
                                  @RequestParam String email,
                                  @RequestParam(required = false) String phone,
                                  @RequestParam(required = false) String address,
-                                 Model model) {
+                                 Model model, RedirectAttributes redirectAttributes) {
         if (notAdmin(session)) {
             return "redirect:/login";
         }
@@ -140,6 +142,20 @@ public class AdminCustomerController {
             model.addAttribute("customer", preview);
             model.addAttribute("isNew", false);
             model.addAttribute("error", "Name and email can't be empty.");
+            return "admin/customer-form";
+        }
+        if (!email.matches("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
+            Customer preview = customerService.getById(id);
+            model.addAttribute("customer", preview);
+            model.addAttribute("isNew", false);
+            model.addAttribute("error", "Enter a valid email address.");
+            return "admin/customer-form";
+        }
+        if (phone != null && !phone.isBlank() && !phone.matches("^[0-9]{9,15}$")) {
+            Customer preview = customerService.getById(id);
+            model.addAttribute("customer", preview);
+            model.addAttribute("isNew", false);
+            model.addAttribute("error", "Phone number must contain 9-15 digits only.");
             return "admin/customer-form";
         }
 
@@ -152,6 +168,7 @@ public class AdminCustomerController {
             model.addAttribute("error", "That email is already used by another customer.");
             return "admin/customer-form";
         }
+        redirectAttributes.addFlashAttribute("success", "Customer details updated.");
         return "redirect:/admin/customers";
     }
 
