@@ -1,8 +1,6 @@
 package com.foodorderingsystem.admin.controller;
 
-import com.foodorderingsystem.admin.singleton.AppSettings;
 import com.foodorderingsystem.customer.service.CustomerService;
-import com.foodorderingsystem.delivery.observer.AdminNotificationObserver;
 import com.foodorderingsystem.delivery.service.RiderService;
 import com.foodorderingsystem.order.service.OrderService;
 import com.foodorderingsystem.payment.service.PaymentService;
@@ -11,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +30,6 @@ public class AdminController {
 
     @Autowired
     private RiderService riderService;
-
-    // Observer pattern: this bean has been quietly collecting delivery status-change
-    // events (see DeliveryService.notifyObservers). The dashboard just reads its log.
-    @Autowired
-    private AdminNotificationObserver adminNotificationObserver;
 
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
@@ -63,29 +53,6 @@ public class AdminController {
         model.addAttribute("statusLabels", new ArrayList<>(statusBreakdown.keySet()));
         model.addAttribute("statusCounts", new ArrayList<>(statusBreakdown.values()));
 
-        // Observer pattern: recent delivery activity collected by AdminNotificationObserver
-        model.addAttribute("recentActivity", adminNotificationObserver.getRecentActivity());
-
-        // Singleton pattern: the one shared AppSettings instance - same object the home page reads
-        model.addAttribute("appSettings", AppSettings.getInstance());
-
         return "admin/dashboard";
-    }
-
-    // Admin edits the site-wide announcement / maintenance mode, both stored on the single
-    // shared AppSettings instance (Singleton pattern) - every page that calls
-    // AppSettings.getInstance() afterwards sees the change immediately, with no database needed.
-    @PostMapping("/settings")
-    public String updateSettings(@RequestParam(required = false) String announcementMessage,
-                                 @RequestParam(required = false, defaultValue = "false") boolean maintenanceMode,
-                                 HttpSession session, RedirectAttributes redirectAttributes) {
-        Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
-        if (isAdmin == null || !isAdmin) {
-            return "redirect:/login";
-        }
-        AppSettings.getInstance().setAnnouncementMessage(announcementMessage);
-        AppSettings.getInstance().setMaintenanceMode(maintenanceMode);
-        redirectAttributes.addFlashAttribute("success", "Site settings updated.");
-        return "redirect:/admin/dashboard";
     }
 }
