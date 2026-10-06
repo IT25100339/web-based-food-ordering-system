@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Your Cart - ExpressMeal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        *{font-family:'Poppins',sans-serif;}
+        body{background:#FFF8F2;}
+        .navbar{background:#1C1C1E;}
+        .brand span{color:#FF6B35;}
+        .btn-orange{background:#FF6B35; border:none; color:#fff; border-radius:50px; font-weight:600;}
+        .btn-orange:hover{background:#e85a2a; color:#fff;}
+        .card{border:none; border-radius:16px;}
+        .form-control, .form-select{border-radius:10px; padding:10px 14px; border:1.5px solid #eee;}
+        .form-control:focus, .form-select:focus{border-color:#FF6B35; box-shadow:0 0 0 3px rgba(255,107,53,.15);}
+        .form-control.is-invalid{border-color:#dc3545;}
+        .form-label{font-weight:600; font-size:.85rem; color:#444;}
+        .section-title{font-weight:600; font-size:.95rem; color:#1c1c1e; display:flex; align-items:center; gap:8px; margin-bottom:14px;}
+        .section-title i{color:#FF6B35;}
+        .field-err{font-size:.78rem; color:#dc3545; margin-top:3px; display:none;}
+        /* "tab" style entrance - the address section glides in like switching into a tab */
+        @keyframes slideInTab{
+            from{opacity:0; transform:translateY(14px);}
+            to{opacity:1; transform:translateY(0);}
+        }
+        .tab-in{animation:slideInTab .45s ease both;}
+        .tab-in.d1{animation-delay:.05s;}
+        .tab-in.d2{animation-delay:.12s;}
+        .tab-in.d3{animation-delay:.19s;}
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark px-4 py-3">
+    <span class="navbar-brand brand fw-bold">Express<span>Meal</span></span>
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-white-50 small" th:if="${customer != null}"><i class="bi bi-person-check-fill"></i> <span th:text="${customer.name}"></span></span>
+        <a th:href="@{/customer/login(redirect='/order/cart')}" class="btn btn-outline-light btn-sm rounded-pill" th:if="${customer == null}"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+        <a th:href="@{/restaurant/menu}" class="btn btn-outline-light btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Back to Menu</a>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <h3 class="mb-4">Your Cart 🛒</h3>
+    <p th:if="${error}" class="alert alert-danger py-2 small" th:text="${error}"></p>
+
+    <div class="card shadow-sm p-0 mb-4" th:if="${!cartItems.isEmpty()}">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th class="ps-4">Item</th><th>Price</th><th>Qty</th><th>Subtotal</th><th class="pe-4 text-end">Action</th></tr></thead>
+                <tbody>
+                <tr th:each="entry : ${cartItems}">
+                    <td class="ps-4 fw-semibold" th:text="${entry.key.name}"></td>
+                    <td th:text="'Rs. ' + ${entry.key.price}"></td>
+                    <td th:text="${entry.value}"></td>
+                    <td th:text="'Rs. ' + ${entry.key.price * entry.value}"></td>
+                    <td class="pe-4 text-end"><a th:href="@{/order/remove/{id}(id=${entry.key.itemId})}" class="btn btn-sm btn-outline-danger rounded-pill"><i class="bi bi-trash"></i> Remove</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <p th:if="${cartItems.isEmpty()}" class="text-muted py-4">Your cart is empty. <a th:href="@{/restaurant/menu}" style="color:#FF6B35; font-weight:600;">Browse the menu</a>.</p>
+
+    <!-- Guest browsing cart: ask them to log in before they can fill in checkout details -->
+    <div th:if="${!cartItems.isEmpty() and customer == null}" class="card p-4 shadow-sm tab-in text-center" style="max-width:600px;">
+        <h5 class="fw-bold mb-2">Total: Rs. <span th:text="${total}"></span></h5>
+        <p class="text-muted mb-3">You'll need to log in to your ExpressMeal account before you can check out. Your cart will still be here.</p>
+        <a th:href="@{/customer/login(redirect='/order/cart')}" class="btn btn-orange"><i class="bi bi-box-arrow-in-right"></i> Log in to checkout</a>
+        <p class="small text-muted mt-3 mb-0">New here? <a th:href="@{/customer/register}" style="color:#FF6B35; font-weight:600;">Create an account</a></p>
+    </div>
+
+    <div th:if="${!cartItems.isEmpty() and customer != null}" class="card p-4 shadow-sm tab-in" style="max-width:600px;">
+        <h5 class="fw-bold mb-4">Total: Rs. <span th:text="${total}"></span></h5>
+
+        <form th:action="@{/order/checkout}" method="post" id="checkoutForm" novalidate>
+
+            <div class="tab-in d1 mb-4">
+                <div class="section-title"><i class="bi bi-person-fill"></i> Contact</div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Contact phone number</label>
+                        <input type="text" name="contactPhone" id="contactPhoneInput" class="form-control"
+                               maxlength="15" placeholder="e.g. 0771234567"
+                               th:value="${contactPhone != null ? contactPhone : (customer != null ? customer.phone : '')}">
+                        <div class="field-err" id="contactPhoneErr">Enter a valid contact number (9-15 digits).</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-in d2 mb-4">
+                <div class="section-title"><i class="bi bi-geo-alt-fill"></i> Delivery Address</div>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">House / Unit No.</label>
+                        <input type="text" name="houseNo" id="houseNoInput" class="form-control" maxlength="40"
+                               placeholder="e.g. No. 24/B" th:value="${houseNo}">
+                        <div class="field-err" id="houseNoErr">House / Unit No. is required.</div>
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label">Street / Area</label>
+                        <input type="text" name="street" id="streetInput" class="form-control" maxlength="120"
+                               placeholder="e.g. Galle Road, Colombo 06" th:value="${street}">
+                        <div class="field-err" id="streetErr">Street address is required.</div>
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label">City</label>
+                        <input type="text" name="city" id="cityInput" class="form-control" maxlength="60"
+                               placeholder="e.g. Colombo" th:value="${city}">
+                        <div class="field-err" id="cityErr">City is required.</div>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Postal Code <span class="text-muted fw-normal" style="font-size:.78rem;">(optional)</span></label>
+                        <input type="text" name="postalCode" id="postalCodeInput" class="form-control" maxlength="6"
+                               placeholder="e.g. 00600" th:value="${postalCode}">
+                        <div class="field-err" id="postalCodeErr">Postal code must be 4-6 digits.</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Landmark / Delivery notes <span class="text-muted fw-normal" style="font-size:.78rem;">(optional)</span></label>
+                        <input type="text" name="landmark" class="form-control" maxlength="150"
+                               placeholder="e.g. Near City Bakery, blue gate" th:value="${landmark}">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-orange w-100 tab-in d3" id="checkoutBtn">Proceed to Checkout</button>
+        </form>
+    </div>
+    <script>
+        const checkoutForm = document.getElementById('checkoutForm');
+        if (checkoutForm) {
+            const fields = [
+                { input: 'contactPhoneInput', err: 'contactPhoneErr', test: v => /^[0-9]{9,15}$/.test(v.trim()) },
+                { input: 'houseNoInput', err: 'houseNoErr', test: v => v.trim().length > 0 },
+                { input: 'streetInput', err: 'streetErr', test: v => v.trim().length > 0 },
+                { input: 'cityInput', err: 'cityErr', test: v => v.trim().length > 0 },
+                { input: 'postalCodeInput', err: 'postalCodeErr', test: v => v.trim() === '' || /^[0-9]{4,6}$/.test(v.trim()) }
+            ];
+
+            function validateField(f) {
+                const input = document.getElementById(f.input);
+                const err = document.getElementById(f.err);
+                const ok = f.test(input.value);
+                input.classList.toggle('is-invalid', !ok);
+                err.style.display = ok ? 'none' : 'block';
+                return ok;
+            }
+
+            fields.forEach(f => {
+                document.getElementById(f.input).addEventListener('input', () => validateField(f));
+            });
+
+            checkoutForm.addEventListener('submit', function (e) {
+                let valid = true;
+                fields.forEach(f => { if (!validateField(f)) valid = false; });
+
+                if (!valid) {
+                    e.preventDefault();
+                    return;
+                }
+                const btn = document.getElementById('checkoutBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+            });
+        }
+    </script>
+</div>
+</body>
+</html>
