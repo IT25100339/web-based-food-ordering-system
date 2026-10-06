@@ -21,22 +21,25 @@ public class AuthController {
     private RiderService riderService;
 
     // Hardcoded admin credentials (Spring Security will replace this later)
-    @Value("${app.admin.username:admin@quickbite.com}")
+    @Value("${app.admin.username:admin@expressmeal.com}")
     private String adminUsername;
 
     @Value("${app.admin.password:admin123}")
     private String adminPassword;
 
     @GetMapping("/login")
-    public String showLoginPage(@RequestParam(required = false) String role, Model model) {
+    public String showLoginPage(@RequestParam(required = false) String role,
+                                @RequestParam(required = false) String redirect, Model model) {
         model.addAttribute("role", role);
+        model.addAttribute("redirect", redirect);
         return "login";
     }
 
     // Portal entry points from the homepage - each preselects the matching role tab
     @GetMapping("/customer/login")
-    public String customerLoginPortal(Model model) {
+    public String customerLoginPortal(@RequestParam(required = false) String redirect, Model model) {
         model.addAttribute("role", "CUSTOMER");
+        model.addAttribute("redirect", redirect);
         return "login";
     }
 
@@ -64,6 +67,7 @@ public class AuthController {
     public String processLogin(@RequestParam String role,
                                @RequestParam String identifier,
                                @RequestParam String password,
+                               @RequestParam(required = false) String redirect,
                                HttpSession session, Model model) {
 
         switch (role) {
@@ -72,9 +76,14 @@ public class AuthController {
                 if (customer == null) {
                     model.addAttribute("error", "Invalid email or password");
                     model.addAttribute("role", role);
+                    model.addAttribute("redirect", redirect);
                     return "login";
                 }
                 session.setAttribute("loggedInCustomer", customer);
+                // send them back to where they came from (e.g. the cart) instead of always the dashboard
+                if (redirect != null && redirect.startsWith("/")) {
+                    return "redirect:" + redirect;
+                }
                 return "redirect:/customer/dashboard";
 
             case "RIDER":
@@ -82,6 +91,7 @@ public class AuthController {
                 if (rider == null) {
                     model.addAttribute("error", "Invalid phone number or password");
                     model.addAttribute("role", role);
+                    model.addAttribute("redirect", redirect);
                     return "login";
                 }
                 session.setAttribute("loggedInRider", rider);
@@ -94,10 +104,12 @@ public class AuthController {
                 }
                 model.addAttribute("error", "Invalid admin credentials");
                 model.addAttribute("role", role);
+                model.addAttribute("redirect", redirect);
                 return "login";
 
             default:
                 model.addAttribute("error", "Please select a valid role");
+                model.addAttribute("redirect", redirect);
                 return "login";
         }
     }
@@ -107,7 +119,6 @@ public class AuthController {
         session.invalidate();
         return "redirect:/";
     }
-
     // ---- Forgot password (customer only) ----
 
     @GetMapping("/forgot-password")
@@ -161,5 +172,60 @@ public class AuthController {
         }
         customerService.resetPassword(customerOpt.get(), newPassword);
         return "redirect:/login?reset=success";
+    }
+
+    // ---- Forgot password (rider) ----
+
+    @GetMapping("/rider/forgot-password")
+    public String showRiderForgotPasswordForm() {
+        return "rider-forgot-password";
+    }
+
+    @PostMapping("/rider/forgot-password")
+    public String processRiderForgotPassword(@RequestParam String phoneNumber, Model model) {
+        String token = riderService.generateResetToken(phoneNumber);
+        model.addAttribute("phoneNumber", phoneNumber);
+        if (token != null) {
+            // Email/SMS sending isn't configured in this dev project - the "sent" link is shown
+            // directly here so the flow can be demoed end-to-end without a real gateway.
+            model.addAttribute("resetLink", "/rider/reset-password/" + token);
+        }
+        // Same confirmation message whether or not the phone number exists (don't reveal registered riders)
+        return "rider-forgot-password-sent";
+    }
+
+    @GetMapping("/rider/reset-password/{token}")
+    public String showRiderResetPasswordForm(@PathVariable String token, Model model) {
+        boolean valid = riderService.findByValidResetToken(token).isPresent();
+        model.addAttribute("token", token);
+        model.addAttribute("valid", valid);
+        return "rider-reset-password";
+    }
+
+    @PostMapping("/rider/reset-password")
+    public String processRiderResetPassword(@RequestParam String token,
+                                            @RequestParam String newPassword,
+                                            @RequestParam String confirmPassword,
+                                            Model model) {
+        var riderOpt = riderService.findByValidResetToken(token);
+        if (riderOpt.isEmpty()) {
+            model.addAttribute("token", token);
+            model.addAttribute("valid", false);
+            return "rider-reset-password";
+        }
+        if (!newPassword.matches("^(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>_\\-]).{8,}$")) {
+            model.addAttribute("token", token);
+            model.addAttribute("valid", true);
+            model.addAttribute("error", "Password must be at least 8 characters and include a number and a special character.");
+            return "rider-reset-password";
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("token", token);
+            model.addAttribute("valid", true);
+            model.addAttribute("error", "Passwords don't match.");
+            return "rider-reset-password";
+        }
+        riderService.resetPassword(riderOpt.get(), newPassword);
+        return "redirect:/login?role=RIDER&reset=success";
     }
 }
